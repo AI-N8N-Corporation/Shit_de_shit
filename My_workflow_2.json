@@ -1,0 +1,444 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        180,
+        260
+      ],
+      "id": "24f94298-949c-4ad7-a50b-4de1caa75d25",
+      "name": "Merge Rapports & Données"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1160,
+        280
+      ],
+      "id": "bb5c3e95-a614-43f7-84dd-dc3d266c908f",
+      "name": "Merge Analyses"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "symbol": "={{ $json.symbol }}",
+            "apy": "={{ $json.apy }}",
+            "tvl": "={{ $json.tvl }}",
+            "score": "{{ $json.score }}",
+            "timestamp": "{{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "apy",
+              "displayName": "apy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tvl",
+              "displayName": "tvl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        480,
+        740
+      ],
+      "id": "d11721a0-9176-4a33-996c-bc6c770a007c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "afxVcD7DhsPzdsYt",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        460,
+        520
+      ],
+      "id": "da712197-fac9-49c6-a306-5f0744a7b160",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-exp",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        840,
+        600
+      ],
+      "id": "c58ffd10-8f8e-4b86-9ef4-a0a94ca10444",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rbZcROcXGoO1wiYA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7427117675",
+        "text": "=🔔 **Vigile des Tendances Aave v3**\n\n**📊 Analyse des variations :**\n{{ $json.text || \"Analyse indisponible\" }}\n\n---\n**📋 Rapport de Tendance :**\n{{ $json.trendReport || \"Données de tendance indisponibles\" }}\n\n*Dernière mise à jour : {{ $json.timestamp || new Date().toISOString() }}*",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        280
+      ],
+      "id": "65c3dbda-b0f4-44f4-a401-ef7f532fcf5e",
+      "name": "Envoyer Alerte Telegram",
+      "webhookId": "8b8c656a-dc60-43dd-a02b-eafbff98ddc8",
+      "credentials": {
+        "telegramApi": {
+          "id": "9sFo3EnzR6cS5Q52",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Tu es un analyste financier expert en DeFi. Ton rôle est d'analyser les variations des taux de rendement (APY) sur Aave v3 Polygon.\n\nDonnées à analyser :\n{{ $json.trendReport }}\n\nCONSIGNE : Rédige une analyse concise de 2-3 phrases maximum. Concentre-toi UNIQUEMENT sur :\n- Les variations significatives (⬆️ et ⬇️)\n- Les opportunités d'investissement émergentes\n- Les risques potentiels si des taux chutent drastiquement\n\nIgnore les actifs stables (➡️) et nouveaux (🆕). Adopte un ton professionnel et factuel."
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        820,
+        380
+      ],
+      "id": "fccdecae-a13e-45cd-87bb-d9ceb1ad4a09",
+      "name": "Analyser les Taux (IA)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIGURATION ---\nconst symbolsToWatch = ['USDC', 'USDT', 'DAI', 'WETH', 'WBTC'];\n// --------------------\n\nconst allPools = $input.item.json.data;\nconst results = [];\n\nfor (const symbol of symbolsToWatch) {\n  const pool = allPools.find(p => \n    p.chain === 'Polygon' && \n    p.project === 'aave-v3' && \n    p.symbol === symbol\n  );\n\n  if (pool && pool.tvlUsd > 1000) { // On ignore les pools avec une très faible liquidité\n    \n    // NOUVEAU : Calcul du score d'attractivité\n    // On utilise le logarithme pour \"calmer\" les très grands chiffres de la TVL\n    const score = (pool.apy / Math.log(pool.tvlUsd)).toFixed(2);\n\n    results.push({\n      symbol: pool.symbol,\n      apy: (pool.apy * 100).toFixed(2) + '%',\n      tvl: `$${(pool.tvlUsd / 1000000).toFixed(1)}M`,\n      score: score // On ajoute le score à nos résultats\n    });\n  }\n}\n\n// On trie les résultats par score, du plus élevé au plus bas\nresults.sort((a, b) => b.score - a.score);\n\n// On prépare la sortie\nconst item = {};\nitem.resultsArray = results;\n// NOUVEAU : Le rapport inclut maintenant le score\nitem.textReport = results.map(r => `${r.symbol}: ${r.apy} | TVL: ${r.tvl} | Score: ${r.score}`).join('\\n');\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        440
+      ],
+      "id": "eacc03cc-ab52-4758-b95a-125d65027014",
+      "name": "Préparer le Rapport"
+    },
+    {
+      "parameters": {
+        "url": "https://yields.llama.fi/pools",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -280,
+        440
+      ],
+      "id": "b8a9d1ef-7d64-4cf8-88fe-802daba54671",
+      "name": "Récupérer Taux DeFi Llama"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        340
+      ],
+      "id": "68204616-0dcd-4a7e-875d-6c0515e75f85",
+      "name": "Toutes les 15 minutes"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -280,
+        240
+      ],
+      "id": "2344bae5-bbf6-4dda-b211-822b835f3d40",
+      "name": "Lire Données d'Hier1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "afxVcD7DhsPzdsYt",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupération des données depuis le nœud Merge\nconst mergedItem = $input.item.json;\n\n// Gestion robuste des données d'hier\nlet oldDataArray = [];\nif (mergedItem.data && Array.isArray(mergedItem.data)) {\n  oldDataArray = mergedItem.data;\n} else if (mergedItem.data && mergedItem.data.length === 0) {\n  // Première exécution - pas de données historiques\n  oldDataArray = [];\n} else {\n  // Fallback si la structure est différente\n  oldDataArray = [];\n}\n\n// Gestion des données actuelles\nconst newDataArray = mergedItem.resultsArray || [];\n\n// Vérification que nous avons des données nouvelles\nif (!Array.isArray(newDataArray) || newDataArray.length === 0) {\n  throw new Error('Aucune donnée nouvelle trouvée');\n}\n\n// Créer une carte des anciennes données pour recherche rapide\nconst oldDataMap = new Map();\noldDataArray.forEach(item => {\n  if (item && item.symbol) {\n    // Nettoyer l'APY si c'est une chaîne avec %\n    const cleanApy = typeof item.apy === 'string' ? \n      parseFloat(item.apy.replace('%', '')) : \n      parseFloat(item.apy) || 0;\n    \n    oldDataMap.set(item.symbol, {\n      ...item,\n      apy: cleanApy\n    });\n  }\n});\n\n// Générer le rapport de comparaison\nconst comparisonReport = newDataArray.map(newItem => {\n  const oldItem = oldDataMap.get(newItem.symbol);\n  let trend = '🆕'; // Nouveau par défaut\n  \n  if (oldItem) {\n    // Nettoyer l'APY actuel\n    const newApy = typeof newItem.apy === 'string' ? \n      parseFloat(newItem.apy.replace('%', '')) : \n      parseFloat(newItem.apy) || 0;\n    \n    const oldApy = oldItem.apy;\n    const delta = newApy - oldApy;\n    \n    if (Math.abs(delta) > 0.05) { // Seuil de 0.05%\n      if (delta > 0) {\n        trend = `⬆️ (+${delta.toFixed(2)}%)`;\n      } else {\n        trend = `⬇️ (${delta.toFixed(2)}%)`;\n      }\n    } else {\n      trend = `➡️`;\n    }\n  }\n  \n  return `${newItem.symbol}: ${newItem.apy} | TVL: ${newItem.tvl} | Score: ${newItem.score} | Tendance: ${trend}`;\n}).join('\\n');\n\n// Préparer les données pour la suite\nconst outputItem = {\n  trendReport: comparisonReport,\n  resultsArray: newDataArray, // Passer les données pour la sauvegarde\n  timestamp: new Date().toISOString()\n};\n\nreturn outputItem;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        260
+      ],
+      "id": "fd443089-c57d-4cb0-b220-89c1bcfa1cf4",
+      "name": "Comparer et Analyser1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge Rapports & Données": {
+      "main": [
+        [
+          {
+            "node": "Comparer et Analyser1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Analyses": {
+      "main": [
+        [
+          {
+            "node": "Envoyer Alerte Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyser les Taux (IA)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyser les Taux (IA)": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyses",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Préparer le Rapport": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Rapports & Données",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Récupérer Taux DeFi Llama": {
+      "main": [
+        [
+          {
+            "node": "Préparer le Rapport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toutes les 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Lire Données d'Hier1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Récupérer Taux DeFi Llama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire Données d'Hier1": {
+      "main": [
+        [
+          {
+            "node": "Merge Rapports & Données",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comparer et Analyser1": {
+      "main": [
+        [
+          {
+            "node": "Analyser les Taux (IA)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Analyses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7834ad59-b156-469a-a071-577fe43543aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b56367c306d042f74906b556c028e3c21be7a4d7ec3381b67e6b66724f352e83"
+  },
+  "id": "TKokXWsEv4xRKmoI",
+  "tags": []
+}
