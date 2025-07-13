@@ -1,0 +1,678 @@
+{
+  "name": "Crypto_Cosmos",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2360,
+        -2860
+      ],
+      "id": "dff816c4-846c-4a84-a868-7ad3212a83c6",
+      "name": "Merge Rapports & Données1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-exp",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        -2460
+      ],
+      "id": "9b840848-d48f-419a-acd1-0e2ea4063d70",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rbZcROcXGoO1wiYA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://yields.llama.fi/pools",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2960,
+        -2700
+      ],
+      "id": "69149556-c125-4772-9f53-7669094e1d5c",
+      "name": "Récupérer Taux DeFi Llama1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "symbol": "={{ $json.symbol }}",
+            "apy": "={{ $json.apy }}",
+            "tvl": "={{ $json.tvl }}",
+            "score": "={{ $json.score }}",
+            "timestamp": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "apy",
+              "displayName": "apy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tvl",
+              "displayName": "tvl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1680,
+        -3040
+      ],
+      "id": "2b797178-2577-4faa-95ad-e60cda65403a",
+      "name": "Sauvegarder Données du Jour",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "afxVcD7DhsPzdsYt",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// On prend le tableau de résultats de l'entrée\nconst resultsForSheet = $input.item.json.resultsForSheet;\n\n// On retourne chaque élément du tableau comme un item n8n séparé.\n// Le noeud Google Sheets va alors s'exécuter une fois pour chaque item.\nreturn resultsForSheet.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1900,
+        -3040
+      ],
+      "id": "2fd57290-0b44-4f22-8d59-73e9ffd91cca",
+      "name": "Préparer pour Sheets"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3240,
+        -2920
+      ],
+      "id": "22eb809b-74e6-466b-9d8d-1e57a6ed66ec",
+      "name": "Tous les jours1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// On récupère les items en appelant le nœud précédent par son nouveau nom simple.\nconst allItems = $('Lire_Historique_Sheets1').all();\n\nconst limit = 35;\n\n// La fonction slice(-limit) ne gardera que les 35 derniers éléments du tableau.\nconst limitedItems = allItems.slice(-limit);\n\n// On retourne uniquement ces 35 derniers items pour les nœuds suivants.\nreturn limitedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2740,
+        -3100
+      ],
+      "id": "1a0eb223-879f-4947-b9f8-c1ab5d4c05fd",
+      "name": "Limiter_Historique1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIGURATION ---\n// On définit les actifs ET les protocoles à surveiller\nconst symbolsToWatch = ['USDC', 'USDT', 'DAI', 'WETH', 'WBTC'];\nconst protocolsToWatch = ['aave-v3', 'compound-v3', 'spark'];\n// --------------------\n\nconst allPools = $input.item.json.data;\nconst results = [];\n\n// On boucle sur tous les pools reçus de l'API\nfor (const pool of allPools) {\n  // On vérifie si le pool correspond à nos critères (chaîne, projet, symbole)\n  if (\n    pool.chain === 'Polygon' &&\n    protocolsToWatch.includes(pool.project) &&\n    symbolsToWatch.includes(pool.symbol) &&\n    pool.tvlUsd > 1000 // On ignore les pools avec une très faible liquidité\n  ) {\n    \n    const score = (pool.apy / Math.log(pool.tvlUsd)).toFixed(2);\n\n    results.push({\n      project: pool.project, // IMPORTANT : On ajoute le nom du projet\n      symbol: pool.symbol,\n      apy: (pool.apy * 100).toFixed(2) + '%',\n      tvl: `$${(pool.tvlUsd / 1000000).toFixed(1)}M`,\n      score: score\n    });\n  }\n}\n\n// On trie les résultats par score, du plus élevé au plus bas\nresults.sort((a, b) => b.score - a.score);\n\n// On prépare la sortie\nconst item = {};\nitem.resultsArray = results; // Contient maintenant les données de tous les protocoles\nitem.timestamp = new Date().toISOString();\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2740,
+        -2700
+      ],
+      "id": "218a1f13-3bf8-4a62-955d-974df9089a26",
+      "name": "Preparer_Rapport1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================================================\n// === CODE FINAL ET DÉFINITIF POUR \"Comparer_Analyser1\" ===\n// ========================================================================\nconst allInputs = $input.all();\n\n// --- EXTRACTION TRÈS ROBUSTE DES DONNÉES (basée sur le contenu) ---\n\n// 1. On trouve l'item contenant les données DeFi du jour (il a une clé 'resultsArray')\nconst defiInputItem = allInputs.find(item => item.json && item.json.resultsArray !== undefined);\nconst currentDefiData = defiInputItem ? defiInputItem.json : {};\n\n// 2. On trouve l'item contenant les données de prix (il a une clé 'priceData')\nconst priceInputItem = allInputs.find(item => item.json && item.json.priceData !== undefined);\nconst priceData = priceInputItem ? priceInputItem.json : {};\n\n// 3. Tout le reste est considéré comme l'historique\nconst historicalData = allInputs\n  .filter(item => item !== defiInputItem && item !== priceInputItem)\n  .map(item => item.json);\n\n\nconsole.log(`Données historiques trouvées: ${historicalData.length} entrées`);\nconsole.log(`Données DeFi actuelles trouvées: ${currentDefiData.resultsArray?.length || 0} pools`);\nconsole.log(`Données de prix trouvées: ${priceData.priceData?.length || 0} actifs`);\n\n\n// --- VALIDATION DES DONNÉES ESSENTIELLES ---\n// Cette partie est maintenant cruciale et devrait fonctionner correctement.\nif (!currentDefiData.resultsArray || currentDefiData.resultsArray.length === 0) {\n  // S'il n'y a aucune opportunité aujourd'hui, on génère un rapport vide mais propre.\n  return {\n    json: {\n      error: \"Aucune donnée DeFi correspondante aux filtres trouvée aujourd'hui.\",\n      trendReport: 'N/A',\n      radarText: 'Aucune donnée à analyser pour le radar.',\n      arbitrageReport: 'Aucune opportunité d\\'arbitrage détectée.',\n      topOpportunity: { symbol: 'N/A', project: 'N/A', apy: 'N/A', opportunity_score: 'N/A', risk_level: 'N/A' },\n      highestVolatility: { symbol: 'N/A', volatility: 'N/A' },\n      highestChange: { symbol: 'N/A', delta: 'N/A' },\n      lowestChange: { symbol: 'N/A', delta: 'N/A' },\n      stats: { totalOpportunities: 0, arbitrageOpportunities: 0 },\n      marketSentiment: priceData.marketSentiment || 'neutral',\n      totalMarketChange: priceData.totalMarketChange || '0.00',\n      timestamp: new Date().toISOString(),\n      resultsForSheet: [],\n    }\n  };\n}\n\n\n// --- LE RESTE DU CODE EST BON ET RESTE IDENTIQUE ---\n\n// --- FONCTIONS UTILITAIRES ---\nfunction getStandardDeviation(array) {\n  if (array.length < 2) return 0;\n  const n = array.length;\n  const mean = array.reduce((a, b) => a + b) / n;\n  const variance = array.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1);\n  return Math.sqrt(variance);\n}\n\nfunction calculateOpportunityScore(apy, tvl, volatility, momentum = 0) {\n  const apyScore = parseFloat(apy.replace('%', '')) / 100;\n  const liquidityScore = Math.log(parseFloat(tvl.replace(/[$M]/g, '')) * 1000000) / 25;\n  const stabilityScore = Math.max(0, 1 - (volatility / 10));\n  const momentumBonus = Math.abs(momentum) / 100;\n  return ((apyScore * liquidityScore * stabilityScore) + momentumBonus).toFixed(4);\n}\n\nfunction detectArbitrageOpportunity(protocols, symbol) {\n  if (protocols.length < 2) return null;\n  const sorted = protocols.sort((a, b) => parseFloat(b.apy) - parseFloat(a.apy));\n  const spread = parseFloat(sorted[0].apy) - parseFloat(sorted[1].apy);\n  if (spread > 0.5) {\n    return {\n      symbol,\n      highest: { project: sorted[0].project, apy: sorted[0].apy },\n      lowest: { project: sorted[1].project, apy: sorted[1].apy },\n      spread: spread.toFixed(2),\n      potential_profit: (spread * 1000).toFixed(0)\n    };\n  }\n  return null;\n}\n\nconst symbolsToWatch = ['USDC', 'USDT', 'DAI', 'WETH', 'WBTC'];\n\n// --- TRAITEMENT DE L'HISTORIQUE ---\nconst historicalDataBySymbol = {};\nhistoricalData.forEach(item => {\n  if (item.symbol) {\n    if (!historicalDataBySymbol[item.symbol]) {\n      historicalDataBySymbol[item.symbol] = [];\n    }\n    const cleanApy = parseFloat(String(item.apy).replace('%', ''));\n    if (!isNaN(cleanApy)) {\n      historicalDataBySymbol[item.symbol].push(cleanApy);\n    }\n  }\n});\n\n// --- ENRICHISSEMENT AVEC DONNÉES PRIX ---\nconst enrichedData = currentDefiData.resultsArray.map(defiItem => {\n  const priceInfo = priceData.priceData?.find(p => p.symbol === defiItem.symbol);\n  return {\n    ...defiItem,\n    current_price: priceInfo?.price_usd || 0,\n    volume_24h: priceInfo?.volume_24h || 0,\n    price_change_24h: priceInfo?.price_change_24h || 0,\n    momentum_score: priceInfo?.momentum_score || 0\n  };\n});\n\n// --- ANALYSE ET ENRICHISSEMENT ---\nlet bestOpportunity = { symbol: 'N/A', project: 'N/A', opportunity_score: -1 };\nlet highestChange = { symbol: 'N/A', project: 'N/A', delta: -Infinity };\nlet lowestChange = { symbol: 'N/A', project: 'N/A', delta: Infinity };\n\nconst analyzedData = enrichedData.map(item => {\n  const currentApy = parseFloat(item.apy.replace('%', ''));\n  const assetHistory = historicalDataBySymbol[item.symbol] || [];\n  const volatility = getStandardDeviation(assetHistory);\n  let trend = '🆕';\n  let deltaValue = 0;\n  if (assetHistory.length > 0) {\n    const lastApy = assetHistory[assetHistory.length - 1];\n    deltaValue = currentApy - lastApy;\n    if (deltaValue > highestChange.delta) {\n      highestChange = { ...item, delta: deltaValue };\n    }\n    if (deltaValue < lowestChange.delta) {\n      lowestChange = { ...item, delta: deltaValue };\n    }\n    if (Math.abs(deltaValue) > 0.1) {\n      trend = deltaValue > 0 ? '⬆️' : '⬇️';\n    } else {\n      trend = '➡️';\n    }\n  }\n  const opportunityScore = calculateOpportunityScore(item.apy, item.tvl, volatility, item.momentum_score);\n  if (parseFloat(opportunityScore) > parseFloat(bestOpportunity.opportunity_score)) {\n    bestOpportunity = { ...item, opportunity_score: opportunityScore };\n  }\n  return { ...item, apy_float: currentApy, volatility: volatility.toFixed(2), trend, delta: deltaValue.toFixed(2), opportunity_score: opportunityScore, risk_level: volatility > 2 ? 'HIGH' : volatility > 1 ? 'MEDIUM' : 'LOW' };\n});\n\n// --- DÉTECTION D'ARBITRAGE ---\nconst arbitrageOpportunities = [];\nsymbolsToWatch.forEach(symbol => {\n  const protocols = analyzedData.filter(d => d.symbol === symbol);\n  const arbitrage = detectArbitrageOpportunity(protocols, symbol);\n  if (arbitrage) {\n    arbitrageOpportunities.push( arbitrage );\n  }\n});\n\n// --- MEILLEURS TAUX PAR ACTIF ---\nconst bestRatesByAsset = {};\nsymbolsToWatch.forEach(symbol => {\n  const bestForSymbol = analyzedData\n    .filter(item => item.symbol === symbol)\n    .reduce((best, current) => parseFloat(current.opportunity_score) > parseFloat(best.opportunity_score) ? current : best, { opportunity_score: -1 });\n  if (bestForSymbol.project) {\n    bestRatesByAsset[symbol] = { apy: bestForSymbol.apy, project: bestForSymbol.project, opportunity_score: bestForSymbol.opportunity_score, risk_level: bestForSymbol.risk_level, trend: bestForSymbol.trend };\n  }\n});\n\n// --- GÉNÉRATION DES RAPPORTS ---\nconst trendReport = analyzedData.map(item => `[${item.project}] ${item.symbol}: ${item.apy} ${item.trend} (Δ${item.delta}%) | Risk: ${item.risk_level} | Score: ${item.opportunity_score}`).join('\\n');\nconst radarText = Object.entries(bestRatesByAsset).map(([symbol, data]) => `• **${symbol}**: ${data.apy} sur **${data.project}** ${data.trend} (Score: ${data.opportunity_score}, Risk: ${data.risk_level})`).join('\\n');\nconst arbitrageReport = arbitrageOpportunities.length > 0 ? arbitrageOpportunities.map(opp => `🎯 **${opp.symbol}**: ${opp.spread}% d'écart | ${opp.highest.project} (${opp.highest.apy}) → ${opp.lowest.project} (${opp.lowest.apy}) | Profit potentiel: $${opp.potential_profit}/1000$`).join('\\n') : 'Aucune opportunité d\\'arbitrage détectée (seuil: 0.5%)';\n\n// --- INDICATEURS CLÉS ---\nconst topOpportunity = analyzedData.reduce((best, current) => parseFloat(current.opportunity_score) > parseFloat(best.opportunity_score) ? current : best, { opportunity_score: -1 });\nconst highestVolatility = analyzedData.reduce((max, current) => parseFloat(current.volatility) > parseFloat(max.volatility) ? current : max, { volatility: -1 });\n\n// --- DONNÉES POUR SAUVEGARDE ---\nconst dataForSheet = analyzedData.map(item => ({ symbol: item.symbol, project: item.project, apy: item.apy, tvl: item.tvl, score: item.opportunity_score, volatility: item.volatility, trend: item.trend, timestamp: new Date().toISOString() }));\n\n// --- RETOUR FINAL ---\nreturn {\n  json: {\n    trendReport,\n    radarText,\n    arbitrageReport,\n    topOpportunity,\n    highestVolatility,\n    bestArbitrageOpportunity: arbitrageOpportunities[0] || null,\n    highestChange: { ...highestChange, delta: highestChange.delta > -Infinity ? `+${highestChange.delta.toFixed(2)}%` : 'N/A' },\n    lowestChange: { ...lowestChange, delta: lowestChange.delta < Infinity ? `${lowestChange.delta.toFixed(2)}%` : 'N/A' },\n    timestamp: new Date().toISOString(),\n    marketSentiment: priceData.marketSentiment || 'neutral',\n    totalMarketChange: priceData.totalMarketChange || '0.00',\n    resultsForSheet: dataForSheet,\n    stats: { totalOpportunities: analyzedData.length, arbitrageOpportunities: arbitrageOpportunities.length, highRiskAssets: analyzedData.filter(item => item.risk_level === 'HIGH').length, dataQuality: { historicalDataAvailable: historicalData.length > 0, priceDataAvailable: priceData.priceData?.length > 0, completeness: (analyzedData.length / symbolsToWatch.length * 100).toFixed(0) + '%' } }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2120,
+        -2860
+      ],
+      "id": "94875e1e-80b2-42c0-bde7-e3bc3eb66804",
+      "name": "Comparer_Analyser1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=En tant qu'analyste pour \"Vigie Crypto\", évalue la situation suivante. Ta conclusion doit faire 1 à 2 phrases directes et factuelles.\n\nContexte de l'Opportunité :\n- Données de l'opportunité théorique la plus élevée : {{ JSON.stringify($json.topOpportunity) }}\n- Résultat de la simulation de trade en direct : \"{{ $json.profitAnalysis.summary }}\"\n\nAnalyse la cohérence entre l'opportunité théorique et le résultat de la simulation.\n\n- Si la simulation est rentable (commence par ✅), confirme la viabilité du trade.\n- Si la simulation n'est pas rentable (commence par ❌), explique brièvement la raison de l'échec (ex: \"l'opportunité est annulée par les frais de gaz\", ou \"la simulation a échoué car les données de 1inch sont manquantes\").\n\nTa conclusion :"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -1200,
+        -2700
+      ],
+      "id": "d700455f-0617-407d-9a05-18a10d11e230",
+      "name": "Analyser_IA1"
+    },
+    {
+      "parameters": {
+        "chatId": "7427117675",
+        "text": "=🔔 **CRYPTO ANALYZER - Rapport Stratégique V3**\n\n📊 **SENTIMENT MARCHÉ**: {{ $json.marketSentiment.charAt(0).toUpperCase() + $json.marketSentiment.slice(1) }} ({{ $json.totalMarketChange }}%)\n\n🎯 **TOP OPPORTUNITÉ (Selon Score Risque/Rendement)**\n{{ $json.topOpportunity.symbol }} sur **{{ $json.topOpportunity.project }}**\n• APY: `{{ $json.topOpportunity.apy }}`\n• Score: `{{ $json.topOpportunity.opportunity_score }}`\n• Risque: `{{ $json.topOpportunity.risk_level }}`\n\n💰 **ARBITRAGE DÉTECTÉ (Théorique)**\n{{ $json.arbitrageReport }}\n\n---\n\n🤖 **ANALYSE IA SUR LE TRADE SIMULÉ**\n*Profit Net Estimé :* **${{ $json.profitAnalysis?.netProfitUSD || '0.00' }}**\n{{ $json.iaText }}\n\n---\n\n📈 **RADAR MULTI-PROTOCOLES**\n{{ $json.radarText }}\n\n📊 **VARIATIONS EXTRÊMES**\n• Plus forte hausse: {{ $json.highestChange.symbol }} ({{ $json.highestChange.delta }})\n• Plus forte baisse: {{ $json.lowestChange.symbol }} ({{ $json.lowestChange.delta }})\n\n⚠️ **RISQUE MAX**: {{ $json.highestVolatility.symbol }} (Volatilité: {{ $json.highestVolatility.volatility }}%)\n\n🔍 **STATS**: {{ $json.stats.totalOpportunities }} opportunités analysées | {{ $json.stats.arbitrageOpportunities }} arbitrages détectés\n\n*Dernière analyse: {{ new Date($json.timestamp).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }}*",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -660,
+        -2860
+      ],
+      "id": "4f5d319f-c149-4529-9768-aee06a045b62",
+      "name": "Envoyer_Telegram1",
+      "webhookId": "8b8c656a-dc60-43dd-a02b-eafbff98ddc8",
+      "credentials": {
+        "telegramApi": {
+          "id": "9sFo3EnzR6cS5Q52",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "AaveV3_Polygon_Rates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qe6nbDU2axhKDzrxHzotyLEcuvcDjWezTy6MZUwZzZ8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2960,
+        -3100
+      ],
+      "id": "6bdfe9c0-366c-4669-9001-1ccead5b3dbb",
+      "name": "Lire_Historique_Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "afxVcD7DhsPzdsYt",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=ids",
+              "value": "=ethereum,bitcoin,usd-coin,tether,dai,matic-network"
+            },
+            {
+              "name": "=vs_currencies",
+              "value": "=usd"
+            },
+            {
+              "name": "=include_24hr_vol:",
+              "value": "=true"
+            },
+            {
+              "name": "=include_24hr_change",
+              "value": "=  true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2960,
+        -2500
+      ],
+      "id": "fa699d02-aac0-45ab-9a4d-3dd4b4f31c17",
+      "name": "CoinGecko_Prices1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Traitement des données CoinGecko pour votre workflow\nconst coingeckoData = $input.item.json;\nconst processedPrices = [];\n\n\n// Mapping des ID CoinGecko vers vos symboles\nconst symbolMapping = {\n  'ethereum': 'WETH',\n  'bitcoin': 'WBTC',\n  'usd-coin': 'USDC',\n  'tether': 'USDT',\n  'dai': 'DAI',\n  'matic-network': 'MATIC' //\n};\n// ... (le reste du code est correct)\n\n// Traitement des données\nfor (const [coinId, data] of Object.entries(coingeckoData)) {\n  const symbol = symbolMapping[coinId];\n  if (symbol) {\n    processedPrices.push({\n      symbol: symbol,\n      price_usd: data.usd,\n      volume_24h: data.usd_24h_vol,\n      price_change_24h: data.usd_24h_change,\n      last_updated: new Date().toISOString(),\n      source: 'coingecko',\n      // Calcul d'un score de momentum basé sur volume et changement de prix\n      momentum_score: ((data.usd_24h_change || 0) * Math.log(data.usd_24h_vol || 1) / 1000).toFixed(4)\n    });\n  }\n}\n\n// Ajout d'un score de sentiment global basé sur les variations\nconst totalChange = processedPrices.reduce((sum, item) => sum + (item.price_change_24h || 0), 0);\nconst marketSentiment = totalChange > 0 ? 'bullish' : totalChange < -5 ? 'bearish' : 'neutral';\n\nreturn { \n  json: { \n    priceData: processedPrices,\n    marketSentiment: marketSentiment,\n    totalMarketChange: totalChange.toFixed(2),\n    timestamp: new Date().toISOString()\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2740,
+        -2500
+      ],
+      "id": "1d4a0dfd-60ce-4f2c-a7e2-c76d94d77223",
+      "name": "Traitement_CoinGecko1"
+    },
+    {
+      "parameters": {
+        "url": "https://api.1inch.dev/swap/v6.0/137/quote",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=src",
+              "value": "=={{ $json.src }}"
+            },
+            {
+              "name": "=dst",
+              "value": "=={{ $json.dst }}"
+            },
+            {
+              "name": "=amount",
+              "value": "=={{ $json.amount }}"
+            },
+            {
+              "name": "=includeGas",
+              "value": "=true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1940,
+        -2600
+      ],
+      "id": "53406757-ead0-43a3-a5aa-ceb5d5144a35",
+      "name": "Appel_1inch",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Xgf5JzdgJmUG1OAa",
+          "name": "Header Auth account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1620,
+        -2860
+      ],
+      "id": "4031300f-8f8d-4955-8edd-c49bd5852129",
+      "name": "Fusion Données Marché"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================================================\n// === CODE V9 (FINAL & ADAPTÉ À L'ARCHITECTURE MERGE) ===\n// ========================================================================\nconsole.log('--- DÉBUT DU TRAITEMENT FINAL (V9) ---');\n\nconst allInputs = $input.all();\n\n// --- Identification robuste des 3 sources de données ---\n// 1. Le rapport préparé (contient originalReport, actualDestSymbol, etc.)\nconst preparedItem = allInputs.find(item => item.json.originalReport !== undefined);\n// 2. La réponse de 1inch (contient toAmount en succès, ou error en échec)\nconst oneInchItem = allInputs.find(item => item.json.toAmount !== undefined || item.json.error !== undefined);\n// 3. Les prix de CoinGecko\nconst priceItem = allInputs.find(item => item.json.priceData !== undefined);\n\n// Validation critique\nif (!preparedItem || !oneInchItem || !priceItem) {\n  throw new Error(\"Donnée manquante. Le noeud Merge doit fournir 3 items: le rapport préparé, la réponse 1inch, et les prix.\");\n}\n\n// --- Extraction des données ---\n// Le rapport final est la base de notre travail\nconst finalReport = preparedItem.json.originalReport;\nconst oneInchResponse = oneInchItem.json;\nconst priceData = priceItem.json;\n\n// --- Cas 1: La simulation a échoué (manque de liquidité, etc.) ---\nif (oneInchResponse.error) {\n  console.log(\"Échec de la simulation 1inch. Raison:\", oneInchResponse.error.description);\n  finalReport.profitAnalysis = {\n    isProfitable: false,\n    netProfitUSD: '0.00',\n    summary: `❌ Simulation échouée: ${oneInchResponse.error.description || 'Pas assez de liquidité.'}`\n  };\n  return { json: finalReport };\n}\n\n// --- Cas 2: La simulation a réussi, on calcule le profit ---\nconst actualDestSymbol = preparedItem.json.actualDestSymbol;\nconst tokenDecimals = preparedItem.json.tokenDecimals;\nconst maticPrice = priceData.priceData.find(p => p.symbol === 'MATIC')?.price_usd || 0;\nconst destPrice = priceData.priceData.find(p => p.symbol === actualDestSymbol)?.price_usd || 0;\n\nif (maticPrice > 0 && destPrice > 0 && tokenDecimals) {\n    const gasCostInUSD = (oneInchResponse.gas * 30 / 1_000_000_000) * maticPrice;\n    const amountInUSD = 1000;\n    const destDecimalsValue = tokenDecimals[actualDestSymbol] || 18;\n    const amountOut = parseFloat(oneInchResponse.toAmount) / Math.pow(10, destDecimalsValue);\n    const amountOutInUSD = amountOut * destPrice;\n    const netProfitUSD = amountOutInUSD - amountInUSD - gasCostInUSD;\n\n    finalReport.profitAnalysis = {\n        isProfitable: netProfitUSD > 0,\n        netProfitUSD: netProfitUSD.toFixed(2),\n        summary: netProfitUSD > 0 \n          ? `✅ Simulation: 1000$ en ${actualDestSymbol} | Profit net: $${netProfitUSD.toFixed(2)}`\n          : `❌ Simulation: 1000$ en ${actualDestSymbol} | Perte nette: $${Math.abs(netProfitUSD).toFixed(2)}`\n    };\n} else {\n    finalReport.profitAnalysis = {\n        isProfitable: false,\n        netProfitUSD: '0.00',\n        summary: `❌ Échec calcul: Prix manquant pour MATIC ou ${actualDestSymbol}.`\n    };\n}\n\nconsole.log('--- TRAITEMENT FINAL (V9) TERMINÉ ---');\nreturn { json: finalReport };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -2860
+      ],
+      "id": "03e3c262-c009-4f17-9bcb-76e50d2ae13a",
+      "name": "Traitement Final"
+    },
+    {
+      "parameters": {
+        "jsCode": "// =======================================================================\n// === CODE V2 (PLUS RÉSILIENT) POUR LE NŒUD \"Traitement Final\" ===\n// =======================================================================\n\nconsole.log('--- DÉBUT DU TRAITEMENT FINAL (V2) ---');\n\nconst allInputs = $input.all();\nconsole.log(`Nombre d'items reçus: ${allInputs.length}`);\n\nconst marketReportItem = allInputs.find(item => item.json.topOpportunity !== undefined);\nconst oneInchItem = allInputs.find(item => item.json.gas !== undefined);\nconst priceDataItem = allInputs.find(item => item.json.priceData !== undefined);\n\nconst marketReport = marketReportItem ? marketReportItem.json : {};\nconst oneInchData = oneInchItem ? oneInchItem.json : {};\nconst priceData = priceDataItem ? priceDataItem.json : {};\n\nif (!marketReportItem) {\n  console.error(\"ERREUR CRITIQUE: Le rapport de marché principal est manquant.\");\n  return { json: { error: \"Le rapport de marché principal n'a pas été trouvé.\" } };\n}\n\nconst finalReport = { ...marketReport };\n\n// --- NOUVELLE SECTION DE CALCUL DE PROFIT AMÉLIORÉE ---\n// Initialisation par défaut\nfinalReport.profitAnalysis = {\n  isProfitable: false,\n  netProfitUSD: '0.00',\n  summary: '❌ Simulation de trade non effectuée.' // Message par défaut\n};\n\nconst hasOneInchData = oneInchData && oneInchData.gas && oneInchData.toAmount;\nconst hasPriceData = priceData && Array.isArray(priceData.priceData) && priceData.priceData.length > 0;\n\n// On vérifie d'abord que les données de base sont là\nif (!hasOneInchData) {\n    finalReport.profitAnalysis.summary = '❌ Échec de la simulation : Aucune réponse de l\\'API 1inch.';\n} else if (!hasPriceData) {\n    finalReport.profitAnalysis.summary = '❌ Échec de la simulation : Données de prix du marché manquantes.';\n} else {\n    // Si les données sont là, on tente le calcul\n    try {\n        const maticPrice = priceData.priceData.find(p => p.symbol === 'MATIC')?.price_usd || 0;\n        const wethPrice = priceData.priceData.find(p => p.symbol === 'WETH')?.price_usd || 0;\n\n        if (maticPrice <= 0 || wethPrice <= 0) {\n            let errorMsg = 'Prix manquant pour ';\n            if (maticPrice <= 0) errorMsg += 'MATIC ';\n            if (wethPrice <= 0) errorMsg += 'WETH';\n            finalReport.profitAnalysis.summary = `❌ Échec de la simulation : ${errorMsg}.`;\n        } else {\n            const gasPriceGwei = 30;\n            const gasCostInUSD = (oneInchData.gas * gasPriceGwei / 1_000_000_000) * maticPrice;\n            const amountInUSD = 1000;\n            const amountOutInUSD = (parseFloat(oneInchData.toAmount) / Math.pow(10, 18)) * wethPrice;\n            \n            const grossProfitUSD = amountOutInUSD - amountInUSD;\n            const netProfitUSD = grossProfitUSD - gasCostInUSD;\n            \n            finalReport.profitAnalysis = {\n                isProfitable: netProfitUSD > 0,\n                netProfitUSD: netProfitUSD.toFixed(2),\n                summary: netProfitUSD > 0 \n                  ? `✅ Simulation rentable ! Profit net: $${netProfitUSD.toFixed(2)}`\n                  : `❌ Simulation non rentable. Perte nette: $${Math.abs(netProfitUSD).toFixed(2)}`,\n                details: {\n                    gasCostUSD: gasCostInUSD.toFixed(2),\n                    grossProfitUSD: grossProfitUSD.toFixed(2),\n                    amountOutUSD: amountOutInUSD.toFixed(2)\n                }\n            };\n        }\n    } catch (error) {\n        console.error('Erreur technique lors du calcul de profitabilité:', error);\n        finalReport.profitAnalysis.summary = '❌ Erreur technique interne lors du calcul de profit.';\n    }\n}\n\nconsole.log('--- TRAITEMENT FINAL (V2) TERMINÉ ---');\nreturn { json: finalReport };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -2860
+      ],
+      "id": "4671ad3f-4789-4cdb-a708-6f7fbdebffa3",
+      "name": "Assemblage Final"
+    },
+    {
+      "parameters": {
+        "jsCode": "// =======================================================================\n// === CODE V3 (AVEC DÉCIMALES) POUR \"Préparer_Simulation\" ===\n// =======================================================================\n\nconst marketReport = $input.item.json;\n\nconst tokenAddresses = {\n  'USDC': '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',\n  'USDT': '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',\n  'DAI': '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',\n  'WETH': '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',\n  'WBTC': '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6',\n  'MATIC': '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270'\n};\n// On rend ce dictionnaire accessible pour les noeuds suivants\nconst tokenDecimals = {\n  'USDC': 6, 'USDT': 6, 'DAI': 18, 'WETH': 18, 'WBTC': 8\n};\n\nconst sourceSymbol = 'USDC';\nconst amountToSwap = 1000;\nlet topSymbol = marketReport.topOpportunity.symbol;\n\nif (sourceSymbol === topSymbol) {\n  topSymbol = 'WETH';\n}\n\nconst simulationData = {\n    src: tokenAddresses[sourceSymbol],\n    dst: tokenAddresses[topSymbol],\n    amount: String(amountToSwap * Math.pow(10, tokenDecimals[sourceSymbol])),\n    actualDestSymbol: topSymbol,\n    tokenDecimals: tokenDecimals, // <-- ON AJOUTE LE DICTIONNAIRE ICI\n    originalReport: marketReport\n};\n\nreturn { json: simulationData };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1940,
+        -2860
+      ],
+      "id": "be90bf15-e886-44aa-a0e7-cb11ef96f40c",
+      "name": "Préparer_Simulation"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge Rapports & Données1": {
+      "main": [
+        [
+          {
+            "node": "Comparer_Analyser1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyser_IA1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Récupérer Taux DeFi Llama1": {
+      "main": [
+        [
+          {
+            "node": "Preparer_Rapport1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer pour Sheets": {
+      "main": [
+        [
+          {
+            "node": "Sauvegarder Données du Jour",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tous les jours1": {
+      "main": [
+        [
+          {
+            "node": "Lire_Historique_Sheets1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Récupérer Taux DeFi Llama1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CoinGecko_Prices1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limiter_Historique1": {
+      "main": [
+        [
+          {
+            "node": "Merge Rapports & Données1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer_Rapport1": {
+      "main": [
+        [
+          {
+            "node": "Merge Rapports & Données1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Comparer_Analyser1": {
+      "main": [
+        [
+          {
+            "node": "Préparer pour Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Préparer_Simulation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyser_IA1": {
+      "main": [
+        [
+          {
+            "node": "Assemblage Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire_Historique_Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Limiter_Historique1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CoinGecko_Prices1": {
+      "main": [
+        [
+          {
+            "node": "Traitement_CoinGecko1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traitement_CoinGecko1": {
+      "main": [
+        [
+          {
+            "node": "Merge Rapports & Données1",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "Fusion Données Marché",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Appel_1inch": {
+      "main": [
+        [
+          {
+            "node": "Fusion Données Marché",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fusion Données Marché": {
+      "main": [
+        [
+          {
+            "node": "Traitement Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traitement Final": {
+      "main": [
+        [
+          {
+            "node": "Analyser_IA1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assemblage Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemblage Final": {
+      "main": [
+        [
+          {
+            "node": "Envoyer_Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer_Simulation": {
+      "main": [
+        [
+          {
+            "node": "Appel_1inch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fusion Données Marché",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "43412a60-7029-473b-8ac7-18d08a106574",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b56367c306d042f74906b556c028e3c21be7a4d7ec3381b67e6b66724f352e83"
+  },
+  "id": "TKokXWsEv4xRKmoI",
+  "tags": []
+}
